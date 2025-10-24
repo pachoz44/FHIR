@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: hapi
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Opcional, para acceso local a la DB
+    networks:
+      - fhir-network
+
+  fhir-server:
+    image: hapiproject/hapi:latest
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hapi
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_SEARCH_ENABLED: "false"  # Desactiva búsqueda avanzada por simplicidad
+      HAPI_FHIR_VERSION: R4  # O ajusta a R4 si prefieres (por defecto R4 en latest)
+      HAPI_FHIR_CORS_ENABLED: "true"  # Habilita CORS
+      HAPI_FHIR_CORS_ALLOWED_ORIGINS: "http://localhost:8000"  # Permite solicitudes
+      HAPI_FHIR_EXUNGE_ENABLED: "true"   # habilita expunge
+    
+    networks:
+      - fhir-network
+
+
+  webapp:
+    build: ./webapp  # Apunta al directorio de la webapp (crearemos esto después)
+    depends_on:
+      - fhir-server
+    ports:
+      - "8000:8000"
+    networks:
+      - fhir-network
+    environment:
+      FHIR_SERVER_URL: http://fhir-server:8080/fhir  # URL interna para conectar al servidor FHIR
+
+networks: # configura una red Docker para que los contenedores puedan comunicarse entre sí.
+  fhir-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+
+# Nota, para eliminar y recrear el Docker Compose con datos limpios:
+# 1. docker compose down -v 
+# 2. docker compose up -d --build
