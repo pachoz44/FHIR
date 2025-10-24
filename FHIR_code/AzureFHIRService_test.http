@@ -1,0 +1,91 @@
+### REST Client
+@fhirurl =https://fhirworkspace593-fhirservice.fhir.azurehealthcareapis.com
+@clientid =69462078-c9fb-45cd-90fa-90f1facaee41
+@clientsecret =uVS8Q~UwzX7~6qsTdF.zLYLmNL9VoNWZzlIR_c4G
+@tenantid =e94a7344-127e-4ba2-b995-24410a5be1de
+
+GET https://fhirworkspace593-fhirservice.fhir.azurehealthcareapis.com/metadata
+
+
+### Get access token 
+# @name getAADToken 
+POST https://login.microsoftonline.com/{{tenantid}}/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+&resource={{fhirurl}}
+&client_id={{clientid}}
+&client_secret={{clientsecret}}
+&scope={{fhirurl}}/.default
+
+### Extract access token from getAADToken request
+@token = {{getAADToken.response.body.access_token}}
+
+
+### GET Patient 
+GET {{fhirurl}}/Patient
+Authorization: Bearer {{token}}
+
+
+### Create Patient
+POST {{fhirurl}}/Patient
+Authorization: Bearer {{token}}
+Content-Type: application/fhir+json
+
+{
+  "resourceType": "Patient",
+  "name": [
+    {
+      "use": "official",
+      "family": "Perez",
+      "given": ["Juan"]
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1985-05-20"
+}
+
+
+
+
+
+
+@fhirurl =https://fhirworkspace593-fhirservice.fhir.azurehealthcareapis.com
+
+
+### GET Patient
+GET {{fhirurl}}/Patient/8500e97d-d79c-4e43-90ab-148aa1652f93
+Authorization: Bearer {{token}}
+
+### GET Encounter
+GET {{fhirurl}}/Encounter?subject=Patient/8500e97d-d79c-4e43-90ab-148aa1652f93
+Authorization: Bearer {{token}}
+
+### GET Condition
+GET {{fhirurl}}/Condition?subject=Patient/8500e97d-d79c-4e43-90ab-148aa1652f93
+Authorization: Bearer {{token}}
+
+### GET MedicationRequest
+GET {{fhirurl}}/MedicationRequest?subject=Patient/8500e97d-d79c-4e43-90ab-148aa1652f93
+Authorization: Bearer {{token}}
+
+### GET CarePlan
+GET {{fhirurl}}/CarePlan?subject=Patient/8500e97d-d79c-4e43-90ab-148aa1652f93
+Authorization: Bearer {{token}}
+
+### GET Observation
+GET {{fhirurl}}/Observation?subject=Patient/8500e97d-d79c-4e43-90ab-148aa1652f93
+Authorization: Bearer {{token}}
+
+
+
+### GET Patient $everything
+GET {{fhirurl}}/Patient/8500e97d-d79c-4e43-90ab-148aa1652f93/$everything
+Authorization: Bearer {{token}}
+
+@fhirurlocal =http://localhost:8080/fhir
+### GET Patient from local FHIR server
+GET {{fhirurlocal}}/Patient/13/$everything
+
+
+
