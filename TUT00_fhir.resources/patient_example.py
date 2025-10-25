@@ -16,3 +16,9 @@ patient = Patient(
 # Convertir a JSON FHIR
 patient_json = patient.json(indent=2)
 print(patient_json)
+
+# Guardar el recurso en JSON (para enviar a un servidor FHIR)
+with open("output_patient.json", "w") as f:
+    f.write(patient.json(indent=2))
+
+
